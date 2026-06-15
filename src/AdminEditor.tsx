@@ -23,6 +23,8 @@ const sections: Array<{ key: SectionKey; label: string }> = [
   { key: "visual", label: "Visual" },
   { key: "export", label: "Exportar" },
 ];
+const baseUrl = import.meta.env.BASE_URL;
+const logoSrc = `${baseUrl}logo-renovera.png`;
 
 function updateAtPath<T>(object: T, path: Array<string | number>, value: unknown): T {
   if (path.length === 0) return value as T;
@@ -105,8 +107,8 @@ export default function AdminEditor({ config, setConfig }: Props) {
   return (
     <div className="editor-page">
       <aside className="editor-sidebar">
-        <a className="editor-logo" href="/">
-          <img src="/logo-renovera.png" alt="Renovera" />
+        <a className="editor-logo" href={baseUrl}>
+          <img src={logoSrc} alt="Renovera" />
         </a>
         <strong>Painel visual</strong>
         <p>Edite textos, CTAs e ajustes visuais sem mexer direto no App.tsx.</p>

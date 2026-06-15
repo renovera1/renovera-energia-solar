@@ -3,6 +3,7 @@ import AdminEditor from "./AdminEditor";
 import { loadStoredSiteConfig, SiteConfig } from "./siteConfig";
 
 const WHATSAPP_NUMBER = "5519996514827";
+const logoSrc = `${import.meta.env.BASE_URL}logo-renovera.png`;
 
 const CONFIG = {
   modulePowerWp: 585,
@@ -371,7 +372,7 @@ function App() {
       <header className="site-header">
         <div className="container nav">
           <a href="#top" className="brand" aria-label="Renovera">
-            <img src="/logo-renovera.png" alt="Renovera" />
+            <img src={logoSrc} alt="Renovera" />
           </a>
 
           <nav className="nav-links" aria-label="Menu principal">
@@ -765,7 +766,7 @@ function App() {
       <footer className="footer">
         <div className="container footer-grid">
           <div className="footer-brand">
-            <img src="/logo-renovera.png" alt="Renovera" />
+            <img src={logoSrc} alt="Renovera" />
             <p>{siteConfig.footer.description}</p>
           </div>
 
