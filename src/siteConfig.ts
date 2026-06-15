@@ -90,11 +90,11 @@ export const defaultSiteConfig: SiteConfig = {
   },
   hero: {
     eyebrow: "RENOVERA SOLAR • DIMENSIONAMENTO FOTOVOLTAICO",
-    title: "Reduza sua conta de luz com energia solar.",
+    title: "Quer saber qual sistema realmente faz sentido para sua conta?",
     subtitle:
-      "Simule em poucos segundos a potência em kWp, quantidade de módulos, geração mensal, economia estimada, investimento aproximado e retorno simples. A Renovera transforma a simulação em projeto técnico, homologação e instalação.",
-    primaryButton: "Calcule a potência ideal do seu sistema fotovoltaico.",
-    secondaryButton: "Falar no WhatsApp",
+      "Envie sua fatura e receba uma análise preliminar de potência, economia e investimento. A Renovera transforma a simulação em projeto técnico, homologação e instalação com viabilidade real.",
+    primaryButton: "Enviar conta de luz para análise",
+    secondaryButton: "Calcular meu sistema",
     chips: [
       { title: "Pré-dimensionamento", description: "kWh → kWp e kWp → kWh" },
       { title: "Projeto completo", description: "homologação e implantação técnica" },
@@ -153,14 +153,14 @@ export const defaultSiteConfig: SiteConfig = {
   },
   contact: {
     eyebrow: "ANÁLISE COMERCIAL",
-    title: "Quer transformar sua conta de energia em economia recorrente?",
+    title: "Quer saber qual sistema realmente faz sentido para sua conta?",
     subtitle:
-      "Envie a simulação para a equipe Renovera e receba uma análise técnica para implantação do seu sistema fotovoltaico residencial, comercial, rural ou industrial.",
-    primaryButton: "Solicitar orçamento",
+      "Envie sua fatura e receba uma análise preliminar de potência, economia e investimento.",
+    primaryButton: "Enviar conta de luz para análise",
     secondaryButton: "Copiar resumo técnico",
   },
   footer: {
-    description: "Energia solar, infraestrutura elétrica e soluções técnicas para acelerar a transição energética.",
+    description: "Energia solar, infraestrutura elétrica e soluções técnicas para transformar consumo em geração com segurança e retorno previsível.",
     scopeTitle: "Escopo",
     scopeText: "Dimensionamento, projeto, homologação, instalação, monitoramento e suporte regulatório.",
     copyright: "© 2026 Renovera. Todos os direitos reservados.",

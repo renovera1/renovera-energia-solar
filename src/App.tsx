@@ -1,9 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import AdminEditor from "./AdminEditor";
 import { loadStoredSiteConfig, SiteConfig } from "./siteConfig";
 
 const WHATSAPP_NUMBER = "5519996514827";
 const logoSrc = `${import.meta.env.BASE_URL}logo-renovera.png`;
+const buildWhatsappUrl = (message: string) =>
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+const heroWhatsappLink = buildWhatsappUrl(
+  "OlÃ¡, Renovera. Gostaria de analisar minha conta de energia para dimensionar um sistema solar. Posso enviar minha fatura?"
+);
+const floatingWhatsappLink = buildWhatsappUrl(
+  "OlÃ¡, Renovera. Gostaria de receber uma anÃ¡lise tÃ©cnica pelo WhatsApp."
+);
+const ecosystemLinks = [
+  ["Consultoria RegulatÃ³ria", "https://renovera1.github.io/renovera-consultoria-regulatoria/"],
+  ["Projetos ElÃ©tricos", "https://renovera1.github.io/renovera-projetos-eletricos/"],
+  ["Energia Solar", "https://renovera1.github.io/renovera-energia-solar/"],
+  ["Eletropostos", "https://renovera1.github.io/renovera-eletroposto/"],
+] as const;
 
 const CONFIG = {
   modulePowerWp: 585,
@@ -16,8 +30,8 @@ const CONFIG = {
 };
 
 type Mode = "consumo" | "potencia";
-type RoofType = "Cerâmica" | "Solo" | "Fibrocimento" | "Metálico" | "Laje";
-type TensionType = "Monofásico 220 V" | "Trifásico 220 V" | "Trifásico 380 V";
+type RoofType = "CerÃ¢mica" | "Solo" | "Fibrocimento" | "MetÃ¡lico" | "Laje";
+type TensionType = "MonofÃ¡sico 220 V" | "TrifÃ¡sico 220 V" | "TrifÃ¡sico 380 V";
 type UfKey =
   | "AC" | "AL" | "AP" | "AM" | "BA" | "CE" | "DF" | "ES" | "GO" | "MA"
   | "MT" | "MS" | "MG" | "PA" | "PB" | "PR" | "PE" | "PI" | "RJ" | "RN"
@@ -54,39 +68,39 @@ const hspPorUf: Record<UfKey, number> = {
 };
 
 const cidadesPorUf: Record<UfKey, string[]> = {
-  AC: ["Rio Branco", "Cruzeiro do Sul", "Sena Madureira", "Tarauacá", "Feijó", "Outra cidade"],
-  AL: ["Maceió", "Arapiraca", "Rio Largo", "Palmeira dos Índios", "Penedo", "Outra cidade"],
-  AP: ["Macapá", "Santana", "Laranjal do Jari", "Oiapoque", "Porto Grande", "Outra cidade"],
+  AC: ["Rio Branco", "Cruzeiro do Sul", "Sena Madureira", "TarauacÃ¡", "FeijÃ³", "Outra cidade"],
+  AL: ["MaceiÃ³", "Arapiraca", "Rio Largo", "Palmeira dos Ãndios", "Penedo", "Outra cidade"],
+  AP: ["MacapÃ¡", "Santana", "Laranjal do Jari", "Oiapoque", "Porto Grande", "Outra cidade"],
   AM: ["Manaus", "Parintins", "Itacoatiara", "Manacapuru", "Coari", "Outra cidade"],
-  BA: ["Salvador", "Feira de Santana", "Vitória da Conquista", "Camaçari", "Juazeiro", "Lauro de Freitas", "Ilhéus", "Barreiras", "Outra cidade"],
-  CE: ["Fortaleza", "Caucaia", "Juazeiro do Norte", "Maracanaú", "Sobral", "Crato", "Iguatu", "Outra cidade"],
-  DF: ["Brasília", "Ceilândia", "Taguatinga", "Samambaia", "Águas Claras", "Gama", "Outra cidade"],
-  ES: ["Vitória", "Vila Velha", "Serra", "Cariacica", "Linhares", "Colatina", "Cachoeiro de Itapemirim", "São Mateus", "Outra cidade"],
-  GO: ["Goiânia", "Aparecida de Goiânia", "Anápolis", "Rio Verde", "Luziânia", "Águas Lindas de Goiás", "Catalão", "Itumbiara", "Outra cidade"],
-  MA: ["São Luís", "Imperatriz", "Timon", "Caxias", "Codó", "Bacabal", "Balsas", "Outra cidade"],
-  MT: ["Cuiabá", "Várzea Grande", "Rondonópolis", "Sinop", "Tangará da Serra", "Sorriso", "Lucas do Rio Verde", "Primavera do Leste", "Outra cidade"],
-  MS: ["Campo Grande", "Dourados", "Três Lagoas", "Corumbá", "Ponta Porã", "Naviraí", "Aquidauana", "Outra cidade"],
-  MG: ["Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora", "Betim", "Montes Claros", "Ribeirão das Neves", "Uberaba", "Governador Valadares", "Divinópolis", "Poços de Caldas", "Pouso Alegre", "São João del-Rei", "Outra cidade"],
-  PA: ["Belém", "Ananindeua", "Santarém", "Marabá", "Parauapebas", "Castanhal", "Altamira", "Outra cidade"],
-  PB: ["João Pessoa", "Campina Grande", "Santa Rita", "Patos", "Bayeux", "Sousa", "Cajazeiras", "Outra cidade"],
-  PR: ["Curitiba", "Londrina", "Maringá", "Ponta Grossa", "Cascavel", "São José dos Pinhais", "Foz do Iguaçu", "Colombo", "Outra cidade"],
-  PE: ["Recife", "Jaboatão dos Guararapes", "Olinda", "Caruaru", "Petrolina", "Paulista", "Cabo de Santo Agostinho", "Outra cidade"],
-  PI: ["Teresina", "Parnaíba", "Picos", "Piripiri", "Floriano", "Campo Maior", "Outra cidade"],
-  RJ: ["Rio de Janeiro", "São Gonçalo", "Duque de Caxias", "Nova Iguaçu", "Niterói", "Belford Roxo", "Campos dos Goytacazes", "Petrópolis", "Volta Redonda", "Outra cidade"],
-  RN: ["Natal", "Mossoró", "Parnamirim", "São Gonçalo do Amarante", "Macaíba", "Ceará-Mirim", "Outra cidade"],
-  RS: ["Porto Alegre", "Caxias do Sul", "Canoas", "Pelotas", "Santa Maria", "Gravataí", "Viamão", "Novo Hamburgo", "São Leopoldo", "Outra cidade"],
-  RO: ["Porto Velho", "Ji-Paraná", "Ariquemes", "Vilhena", "Cacoal", "Rolim de Moura", "Outra cidade"],
-  RR: ["Boa Vista", "Rorainópolis", "Caracaraí", "Alto Alegre", "Mucajaí", "Outra cidade"],
-  SC: ["Joinville", "Florianópolis", "Blumenau", "São José", "Chapecó", "Itajaí", "Criciúma", "Jaraguá do Sul", "Palhoça", "Outra cidade"],
-  SP: ["São Paulo", "Campinas", "Guarulhos", "São Bernardo do Campo", "Santo André", "Osasco", "Ribeirão Preto", "Sorocaba", "São José dos Campos", "São José do Rio Preto", "Jundiaí", "Piracicaba", "Bauru", "Araraquara", "São Carlos", "Rio Claro", "Limeira", "Mogi Guaçu", "Mogi Mirim", "São João da Boa Vista", "Outra cidade"],
-  SE: ["Aracaju", "Nossa Senhora do Socorro", "Lagarto", "Itabaiana", "São Cristóvão", "Estância", "Outra cidade"],
-  TO: ["Palmas", "Araguaína", "Gurupi", "Porto Nacional", "Paraíso do Tocantins", "Colinas do Tocantins", "Outra cidade"],
+  BA: ["Salvador", "Feira de Santana", "VitÃ³ria da Conquista", "CamaÃ§ari", "Juazeiro", "Lauro de Freitas", "IlhÃ©us", "Barreiras", "Outra cidade"],
+  CE: ["Fortaleza", "Caucaia", "Juazeiro do Norte", "MaracanaÃº", "Sobral", "Crato", "Iguatu", "Outra cidade"],
+  DF: ["BrasÃ­lia", "CeilÃ¢ndia", "Taguatinga", "Samambaia", "Ãguas Claras", "Gama", "Outra cidade"],
+  ES: ["VitÃ³ria", "Vila Velha", "Serra", "Cariacica", "Linhares", "Colatina", "Cachoeiro de Itapemirim", "SÃ£o Mateus", "Outra cidade"],
+  GO: ["GoiÃ¢nia", "Aparecida de GoiÃ¢nia", "AnÃ¡polis", "Rio Verde", "LuziÃ¢nia", "Ãguas Lindas de GoiÃ¡s", "CatalÃ£o", "Itumbiara", "Outra cidade"],
+  MA: ["SÃ£o LuÃ­s", "Imperatriz", "Timon", "Caxias", "CodÃ³", "Bacabal", "Balsas", "Outra cidade"],
+  MT: ["CuiabÃ¡", "VÃ¡rzea Grande", "RondonÃ³polis", "Sinop", "TangarÃ¡ da Serra", "Sorriso", "Lucas do Rio Verde", "Primavera do Leste", "Outra cidade"],
+  MS: ["Campo Grande", "Dourados", "TrÃªs Lagoas", "CorumbÃ¡", "Ponta PorÃ£", "NaviraÃ­", "Aquidauana", "Outra cidade"],
+  MG: ["Belo Horizonte", "UberlÃ¢ndia", "Contagem", "Juiz de Fora", "Betim", "Montes Claros", "RibeirÃ£o das Neves", "Uberaba", "Governador Valadares", "DivinÃ³polis", "PoÃ§os de Caldas", "Pouso Alegre", "SÃ£o JoÃ£o del-Rei", "Outra cidade"],
+  PA: ["BelÃ©m", "Ananindeua", "SantarÃ©m", "MarabÃ¡", "Parauapebas", "Castanhal", "Altamira", "Outra cidade"],
+  PB: ["JoÃ£o Pessoa", "Campina Grande", "Santa Rita", "Patos", "Bayeux", "Sousa", "Cajazeiras", "Outra cidade"],
+  PR: ["Curitiba", "Londrina", "MaringÃ¡", "Ponta Grossa", "Cascavel", "SÃ£o JosÃ© dos Pinhais", "Foz do IguaÃ§u", "Colombo", "Outra cidade"],
+  PE: ["Recife", "JaboatÃ£o dos Guararapes", "Olinda", "Caruaru", "Petrolina", "Paulista", "Cabo de Santo Agostinho", "Outra cidade"],
+  PI: ["Teresina", "ParnaÃ­ba", "Picos", "Piripiri", "Floriano", "Campo Maior", "Outra cidade"],
+  RJ: ["Rio de Janeiro", "SÃ£o GonÃ§alo", "Duque de Caxias", "Nova IguaÃ§u", "NiterÃ³i", "Belford Roxo", "Campos dos Goytacazes", "PetrÃ³polis", "Volta Redonda", "Outra cidade"],
+  RN: ["Natal", "MossorÃ³", "Parnamirim", "SÃ£o GonÃ§alo do Amarante", "MacaÃ­ba", "CearÃ¡-Mirim", "Outra cidade"],
+  RS: ["Porto Alegre", "Caxias do Sul", "Canoas", "Pelotas", "Santa Maria", "GravataÃ­", "ViamÃ£o", "Novo Hamburgo", "SÃ£o Leopoldo", "Outra cidade"],
+  RO: ["Porto Velho", "Ji-ParanÃ¡", "Ariquemes", "Vilhena", "Cacoal", "Rolim de Moura", "Outra cidade"],
+  RR: ["Boa Vista", "RorainÃ³polis", "CaracaraÃ­", "Alto Alegre", "MucajaÃ­", "Outra cidade"],
+  SC: ["Joinville", "FlorianÃ³polis", "Blumenau", "SÃ£o JosÃ©", "ChapecÃ³", "ItajaÃ­", "CriciÃºma", "JaraguÃ¡ do Sul", "PalhoÃ§a", "Outra cidade"],
+  SP: ["SÃ£o Paulo", "Campinas", "Guarulhos", "SÃ£o Bernardo do Campo", "Santo AndrÃ©", "Osasco", "RibeirÃ£o Preto", "Sorocaba", "SÃ£o JosÃ© dos Campos", "SÃ£o JosÃ© do Rio Preto", "JundiaÃ­", "Piracicaba", "Bauru", "Araraquara", "SÃ£o Carlos", "Rio Claro", "Limeira", "Mogi GuaÃ§u", "Mogi Mirim", "SÃ£o JoÃ£o da Boa Vista", "Outra cidade"],
+  SE: ["Aracaju", "Nossa Senhora do Socorro", "Lagarto", "Itabaiana", "SÃ£o CristÃ³vÃ£o", "EstÃ¢ncia", "Outra cidade"],
+  TO: ["Palmas", "AraguaÃ­na", "Gurupi", "Porto Nacional", "ParaÃ­so do Tocantins", "Colinas do Tocantins", "Outra cidade"],
 };
 
 const disponibilidadePorTensao: Record<TensionType, number> = {
-  "Monofásico 220 V": 30,
-  "Trifásico 220 V": 100,
-  "Trifásico 380 V": 100,
+  "MonofÃ¡sico 220 V": 30,
+  "TrifÃ¡sico 220 V": 100,
+  "TrifÃ¡sico 380 V": 100,
 };
 
 const monthlyFactors = [
@@ -141,7 +155,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
     <div className={`faq-item ${open ? "open" : ""}`}>
       <button className="faq-question" onClick={() => setOpen(!open)} type="button">
         <span>{question}</span>
-        <span className="faq-icon">{open ? "−" : "+"}</span>
+        <span className="faq-icon">{open ? "âˆ’" : "+"}</span>
       </button>
       {open && <div className="faq-answer">{answer}</div>}
     </div>
@@ -174,11 +188,11 @@ function App() {
   const [phone, setPhone] = useState("");
   const [uf, setUf] = useState<UfKey>("SP");
   const [cityOptions, setCityOptions] = useState<string[]>(cidadesPorUf.SP);
-  const [city, setCity] = useState("São João da Boa Vista");
+  const [city, setCity] = useState("SÃ£o JoÃ£o da Boa Vista");
   const [otherCity, setOtherCity] = useState("");
   const [citiesLoading, setCitiesLoading] = useState(false);
-  const [roofType, setRoofType] = useState<RoofType>("Cerâmica");
-  const [tension, setTension] = useState<TensionType>("Trifásico 220 V");
+  const [roofType, setRoofType] = useState<RoofType>("CerÃ¢mica");
+  const [tension, setTension] = useState<TensionType>("TrifÃ¡sico 220 V");
   const [monthlyConsumption, setMonthlyConsumption] = useState(700);
   const [installedPower, setInstalledPower] = useState(10);
   const [tariff, setTariff] = useState(CONFIG.defaultTariff);
@@ -270,16 +284,16 @@ function App() {
   const validation = useMemo(() => {
     const errors: string[] = [];
     if (!name.trim()) errors.push("Informe seu nome.");
-    if (!phoneIsValid(phone)) errors.push("Informe um telefone válido com DDD.");
+    if (!phoneIsValid(phone)) errors.push("Informe um telefone vÃ¡lido com DDD.");
     if (!finalCity) errors.push("Informe a cidade.");
-    if (mode === "consumo" && monthlyConsumption <= 0) errors.push("Informe o consumo médio mensal.");
-    if (mode === "potencia" && installedPower <= 0) errors.push("Informe a potência instalada desejada.");
+    if (mode === "consumo" && monthlyConsumption <= 0) errors.push("Informe o consumo mÃ©dio mensal.");
+    if (mode === "potencia" && installedPower <= 0) errors.push("Informe a potÃªncia instalada desejada.");
     if (tariff <= 0) errors.push("Informe a tarifa de energia.");
     return errors;
   }, [name, phone, finalCity, mode, monthlyConsumption, installedPower, tariff]);
 
   const summary = useMemo(() => {
-    return `Simulação Fotovoltaica Renovera\nNome: ${name.trim() || "Não informado"}\nTelefone: ${phone || "Não informado"}\nCidade/UF: ${finalCity || "Não informado"}/${uf}\nTipo de telhado/local: ${roofType}\nTensão selecionada: ${tension}\nDisponibilidade mínima considerada: ${minimumAvailability} kWh\nModo: ${mode === "consumo" ? "Dimensionamento por consumo" : "Estimativa por potência instalada"}\nConsumo médio informado: ${formatNumber(monthlyConsumption)} kWh/mês\nPotência desejada informada: ${formatDecimal(installedPower)} kWp\nHSP média da UF: ${formatDecimal(hsp)} kWh/m²/dia\nPerdas técnicas internas consideradas: ${CONFIG.lossesPercent}%\nMódulo de referência: ${formatNumber(CONFIG.modulePowerWp)} Wp\nQuantidade de módulos: ${formatNumber(result.modules)}\nPotência CC final: ${formatDecimal(result.systemPower)} kWp\nGeração média mensal: ${formatNumber(result.monthlyGeneration)} kWh/mês\nGeração anual estimada: ${formatNumber(result.annualGeneration)} kWh/ano\nEconomia mensal estimada: ${formatCurrency(result.monthlySavings)}\nEconomia anual estimada: ${formatCurrency(result.annualSavings)}\nInvestimento estimado: ${formatCurrency(result.investment)}\nPayback simples: ${formatDecimal(result.paybackMonths, 1)} meses (${formatDecimal(result.paybackYears, 1)} anos)\nÁrea estimada: ${formatDecimal(result.area, 1)} m²`;
+    return `SimulaÃ§Ã£o Fotovoltaica Renovera\nNome: ${name.trim() || "NÃ£o informado"}\nTelefone: ${phone || "NÃ£o informado"}\nCidade/UF: ${finalCity || "NÃ£o informado"}/${uf}\nTipo de telhado/local: ${roofType}\nTensÃ£o selecionada: ${tension}\nDisponibilidade mÃ­nima considerada: ${minimumAvailability} kWh\nModo: ${mode === "consumo" ? "Dimensionamento por consumo" : "Estimativa por potÃªncia instalada"}\nConsumo mÃ©dio informado: ${formatNumber(monthlyConsumption)} kWh/mÃªs\nPotÃªncia desejada informada: ${formatDecimal(installedPower)} kWp\nHSP mÃ©dia da UF: ${formatDecimal(hsp)} kWh/mÂ²/dia\nPerdas tÃ©cnicas internas consideradas: ${CONFIG.lossesPercent}%\nMÃ³dulo de referÃªncia: ${formatNumber(CONFIG.modulePowerWp)} Wp\nQuantidade de mÃ³dulos: ${formatNumber(result.modules)}\nPotÃªncia CC final: ${formatDecimal(result.systemPower)} kWp\nGeraÃ§Ã£o mÃ©dia mensal: ${formatNumber(result.monthlyGeneration)} kWh/mÃªs\nGeraÃ§Ã£o anual estimada: ${formatNumber(result.annualGeneration)} kWh/ano\nEconomia mensal estimada: ${formatCurrency(result.monthlySavings)}\nEconomia anual estimada: ${formatCurrency(result.annualSavings)}\nInvestimento estimado: ${formatCurrency(result.investment)}\nPayback simples: ${formatDecimal(result.paybackMonths, 1)} meses (${formatDecimal(result.paybackYears, 1)} anos)\nÃrea estimada: ${formatDecimal(result.area, 1)} mÂ²`;
   }, [name, phone, finalCity, uf, roofType, tension, minimumAvailability, mode, monthlyConsumption, installedPower, hsp, result]);
 
   if (isEditorRoute) {
@@ -290,7 +304,7 @@ function App() {
   const whatsappMessage = encodeURIComponent(
     `Olá, quero uma análise para um projeto fotovoltaico com base nesta simulação:\n\n${summary}`
   );
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+  const simulationWhatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -361,9 +375,9 @@ function App() {
 
     try {
       await navigator.clipboard.writeText(summary);
-      alert("Resumo copiado para a área de transferência.");
+      alert("Resumo copiado para a Ã¡rea de transferÃªncia.");
     } catch {
-      alert("Não foi possível copiar automaticamente. Selecione o resumo manualmente.");
+      alert("NÃ£o foi possÃ­vel copiar automaticamente. Selecione o resumo manualmente.");
     }
   };
 
@@ -377,13 +391,13 @@ function App() {
 
           <nav className="nav-links" aria-label="Menu principal">
             <a href="#calculadora">Calculadora</a>
-            <a href="#solucoes">Soluções</a>
+            <a href="#solucoes">SoluÃ§Ãµes</a>
             <a href="#processo">Processo</a>
-            <a href="#duvidas">Dúvidas</a>
+            <a href="#duvidas">DÃºvidas</a>
           </nav>
 
-          <a className="nav-cta" href="#calculadora">
-            Solicitar análise
+          <a className="nav-cta" href={heroWhatsappLink} target="_blank" rel="noreferrer">
+            Enviar conta de luz para análise
           </a>
         </div>
       </header>
@@ -399,10 +413,10 @@ function App() {
               <p className="hero-description">{siteConfig.hero.subtitle}</p>
 
               <div className="hero-actions">
-                <a className="btn btn-primary" href="#calculadora">
+                <a className="btn btn-primary" href={heroWhatsappLink} target="_blank" rel="noreferrer">
                   {siteConfig.hero.primaryButton}
                 </a>
-                <a className="btn btn-secondary" href={whatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer">
+                <a className="btn btn-secondary" href="#calculadora">
                   {siteConfig.hero.secondaryButton}
                 </a>
               </div>
@@ -457,11 +471,11 @@ function App() {
                   <div className="scene-energy-card farm-energy-card">
                     <small>Usina estimada</small>
                     <strong>{formatDecimal(result.systemPower)} kWp</strong>
-                    <p>{formatNumber(result.modules)} módulos • {formatNumber(result.monthlyGeneration)} kWh/mês</p>
+                    <p>{formatNumber(result.modules)} mÃ³dulos â€¢ {formatNumber(result.monthlyGeneration)} kWh/mÃªs</p>
                   </div>
 
                   <div className="farm-savings-badge">
-                    <small>Economia/mês</small>
+                    <small>Economia/mÃªs</small>
                     <strong>{formatCurrency(result.monthlySavings)}</strong>
                   </div>
                 </div>
@@ -469,17 +483,17 @@ function App() {
                 <div className="solar-mini-grid refined-metrics hero-flow-row">
                   <div className="solar-metric">
                     <span>Conta de luz</span>
-                    <strong>↓</strong>
+                    <strong>â†“</strong>
                   </div>
                   <div className="solar-metric">
                     <span>Projeto FV</span>
-                    <strong>✓</strong>
+                    <strong>âœ“</strong>
                   </div>
                 </div>
               </div>
 
               <div className="hero-side-card solar-side-card refined-side-card">
-                <div className="hero-side-icon">↗</div>
+                <div className="hero-side-icon">â†—</div>
                 <small>Retorno simples</small>
                 <strong>{formatDecimal(result.paybackYears, 1)} anos</strong>
                 <p>considerando a economia mensal projetada</p>
@@ -501,14 +515,14 @@ function App() {
                 Dimensionar por consumo
               </button>
               <button className={mode === "potencia" ? "active" : ""} onClick={() => setMode("potencia")} type="button">
-                Estimar por potência
+                Estimar por potÃªncia
               </button>
             </div>
 
             <div className="calculator-box solar-calculator-box">
               <div className="calculator-left">
                 <div className="calculator-title">
-                  <div className="calculator-icon">☀</div>
+                  <div className="calculator-icon">â˜€</div>
                   <div>
                     <h3>{siteConfig.calculator.formTitle}</h3>
                     <p>{siteConfig.calculator.formSubtitle}</p>
@@ -542,7 +556,7 @@ function App() {
                         <option key={item} value={item}>{item}</option>
                       ))}
                     </select>
-                    <small>{citiesLoading ? "Carregando cidades da UF..." : "Lista de municípios filtrada pela UF selecionada."}</small>
+                    <small>{citiesLoading ? "Carregando cidades da UF..." : "Lista de municÃ­pios filtrada pela UF selecionada."}</small>
                   </div>
 
                   {city === "Outra cidade" && (
@@ -554,13 +568,13 @@ function App() {
 
                   {mode === "consumo" ? (
                     <div className="input-group">
-                      <label>Consumo médio mensal</label>
+                      <label>Consumo mÃ©dio mensal</label>
                       <input type="number" min={0} step={10} value={monthlyConsumption} onChange={(e) => setMonthlyConsumption(Number(e.target.value))} />
-                      <small>kWh/mês</small>
+                      <small>kWh/mÃªs</small>
                     </div>
                   ) : (
                     <div className="input-group">
-                      <label>Potência instalada desejada</label>
+                      <label>PotÃªncia instalada desejada</label>
                       <input type="number" min={0} step={0.1} value={installedPower} onChange={(e) => setInstalledPower(Number(e.target.value))} />
                       <small>kWp</small>
                     </div>
@@ -575,22 +589,22 @@ function App() {
                   <div className="input-group">
                     <label>Tipo de telhado/local</label>
                     <select value={roofType} onChange={(e) => setRoofType(e.target.value as RoofType)}>
-                      <option>Cerâmica</option>
+                      <option>CerÃ¢mica</option>
                       <option>Solo</option>
                       <option>Fibrocimento</option>
-                      <option>Metálico</option>
+                      <option>MetÃ¡lico</option>
                       <option>Laje</option>
                     </select>
                   </div>
 
                   <div className="input-group">
-                    <label>Tensão</label>
+                    <label>TensÃ£o</label>
                     <select value={tension} onChange={(e) => setTension(e.target.value as TensionType)}>
-                      <option>Monofásico 220 V</option>
-                      <option>Trifásico 220 V</option>
-                      <option>Trifásico 380 V</option>
+                      <option>MonofÃ¡sico 220 V</option>
+                      <option>TrifÃ¡sico 220 V</option>
+                      <option>TrifÃ¡sico 380 V</option>
                     </select>
-                    <small>Disponibilidade considerada: {minimumAvailability} kWh/mês</small>
+                    <small>Disponibilidade considerada: {minimumAvailability} kWh/mÃªs</small>
                   </div>
                 </div>
 
@@ -599,9 +613,9 @@ function App() {
                   <div className="generation-head">
                     <div>
                       <span>Curva anual estimada</span>
-                      <strong>Geração mensal simulada</strong>
+                      <strong>GeraÃ§Ã£o mensal simulada</strong>
                     </div>
-                    <small>máx. {formatNumber(result.maxGeneration)} kWh</small>
+                    <small>mÃ¡x. {formatNumber(result.maxGeneration)} kWh</small>
                   </div>
 
                   <div className="generation-bars">
@@ -625,19 +639,19 @@ function App() {
               <div className="calculator-right">
                 <div className="result-grid">
                   <div className="result-card">
-                    <span>POTÊNCIA CC DO SISTEMA</span>
+                    <span>POTÃŠNCIA CC DO SISTEMA</span>
                     <strong>{formatDecimal(result.systemPower)} kWp</strong>
-                    <p>Potência teórica: {formatDecimal(result.theoreticalPower)} kWp</p>
+                    <p>PotÃªncia teÃ³rica: {formatDecimal(result.theoreticalPower)} kWp</p>
                   </div>
 
                   <div className="result-card">
-                    <span>QUANTIDADE DE MÓDULOS</span>
+                    <span>QUANTIDADE DE MÃ“DULOS</span>
                     <strong>{formatNumber(result.modules)}</strong>
-                    <p>Módulos de {formatNumber(CONFIG.modulePowerWp)} Wp.</p>
+                    <p>MÃ³dulos de {formatNumber(CONFIG.modulePowerWp)} Wp.</p>
                   </div>
 
                   <div className="result-card">
-                    <span>GERAÇÃO MÉDIA MENSAL</span>
+                    <span>GERAÃ‡ÃƒO MÃ‰DIA MENSAL</span>
                     <strong>{formatNumber(result.monthlyGeneration)} kWh</strong>
                     <p>{formatNumber(result.annualGeneration)} kWh/ano estimados.</p>
                   </div>
@@ -649,15 +663,15 @@ function App() {
                   </div>
 
                   <div className="result-card">
-                    <span>ÁREA ESTIMADA</span>
-                    <strong>{formatDecimal(result.area, 1)} m²</strong>
-                    <p>Área aproximada ocupada pelos módulos.</p>
+                    <span>ÃREA ESTIMADA</span>
+                    <strong>{formatDecimal(result.area, 1)} mÂ²</strong>
+                    <p>Ãrea aproximada ocupada pelos mÃ³dulos.</p>
                   </div>
 
                   <div className="result-card">
                     <span>DISPONIBILIDADE</span>
                     <strong>{formatNumber(minimumAvailability)} kWh</strong>
-                    <p>Calculada pela tensão selecionada.</p>
+                    <p>Calculada pela tensÃ£o selecionada.</p>
                   </div>
                 </div>
 
@@ -673,7 +687,7 @@ function App() {
 
 
                 <div className="summary-actions">
-                  <a className="btn btn-secondary" href={whatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer">
+                  <a className="btn btn-secondary" href={simulationWhatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer">
                     Enviar simulação no WhatsApp
                   </a>
                   <button className="btn btn-outline" onClick={copySummary} type="button">
@@ -751,43 +765,47 @@ function App() {
               </div>
 
               <div className="development-right contact-actions">
-                <a className="btn btn-secondary" href={whatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer">
+                <a className="btn btn-secondary" href={heroWhatsappLink} target="_blank" rel="noreferrer">
                   {siteConfig.contact.primaryButton}
                 </a>
                 <button className="btn btn-primary" onClick={copySummary} type="button">
                   {siteConfig.contact.secondaryButton}
                 </button>
               </div>
+              <small className="finalMicrocopy">
+                Análise preliminar com base no consumo, tarifa, tensão e perfil da unidade consumidora.
+              </small>
             </div>
           </div>
         </section>
       </main>
 
       <footer className="footer">
-        <div className="container footer-grid">
-          <div className="footer-brand">
+        <div className="container footer-grid footer-grid-three">
+          <div className="footer-brand footer-panel">
             <img src={logoSrc} alt="Renovera" />
             <p>{siteConfig.footer.description}</p>
           </div>
 
-          <div className="footer-col">
-            <h4>Menu</h4>
-            <a href="#calculadora">Calculadora</a>
-            <a href="#solucoes">Soluções</a>
-            <a href="#processo">Processo</a>
-            <a href="#duvidas">Dúvidas</a>
+          <div className="footer-col footer-panel">
+            <h4><span className="footer-icon">L</span> ENDEREÇO</h4>
+            <p>Rua Visconde do Rio Branco, n.106,</p>
+            <p>Centro, São João da Boa Vista - SP,</p>
+            <p>CEP: 13870-180</p>
           </div>
 
-          <div className="footer-col">
-            <h4>Contato</h4>
+          <div className="footer-col footer-panel">
+            <h4><span className="footer-icon">C</span> CONTATO</h4>
+            <a href="https://wa.me/5519996514827" target="_blank" rel="noreferrer">+55 (19) 99651-4827</a>
+            <a href="tel:+551931950160">+55 (19) 3195-0160</a>
             <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>
-            <a href={whatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer">WhatsApp comercial</a>
           </div>
+        </div>
 
-          <div className="footer-col">
-            <h4>{siteConfig.footer.scopeTitle}</h4>
-            <p>{siteConfig.footer.scopeText}</p>
-          </div>
+        <div className="container ecosystem-links">
+          {ecosystemLinks.map(([label, href]) => (
+            <a key={href} href={href} target="_blank" rel="noreferrer">{label}</a>
+          ))}
         </div>
 
         <div className="container footer-bottom">
@@ -796,7 +814,7 @@ function App() {
       </footer>
 
       {siteConfig.visual.showFloatingWhatsapp && (
-        <a className="whatsapp-float" href={whatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp">
+        <a className="whatsapp-float" href={floatingWhatsappLink} target="_blank" rel="noreferrer" aria-label="Receber análise pelo WhatsApp">
           <WhatsAppIcon />
         </a>
       )}
@@ -805,3 +823,4 @@ function App() {
 }
 
 export default App;
+
