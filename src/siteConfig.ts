@@ -94,7 +94,7 @@ export const defaultSiteConfig: SiteConfig = {
     subtitle:
       "Envie sua fatura e receba uma análise preliminar de potência, economia e investimento. A Renovera transforma a simulação em projeto técnico, homologação e instalação com viabilidade real.",
     primaryButton: "Enviar conta de luz para análise",
-    secondaryButton: "Calcular meu sistema",
+    secondaryButton: "Falar com especialista",
     chips: [
       { title: "Pré-dimensionamento", description: "kWh → kWp e kWp → kWh" },
       { title: "Projeto completo", description: "homologação e implantação técnica" },

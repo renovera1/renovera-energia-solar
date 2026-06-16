@@ -3,6 +3,8 @@ import AdminEditor from "./AdminEditor";
 import { loadStoredSiteConfig, SiteConfig } from "./siteConfig";
 
 const WHATSAPP_NUMBER = "5519996514827";
+const buildWhatsappUrl = (message: string) =>
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 const logoSrc = `${import.meta.env.BASE_URL}logo-renovera.png`;
 
 const CONFIG = {
@@ -287,10 +289,12 @@ function App() {
   }
 
   const whatsappNumber = onlyNumbers(siteConfig.whatsappNumber || WHATSAPP_NUMBER);
-  const whatsappMessage = encodeURIComponent(
-    `Olá, quero uma análise para um projeto fotovoltaico com base nesta simulação:\n\n${summary}`
-  );
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+  const whatsappLink = buildWhatsappUrl(
+    `Olá, Renovera. Gostaria de analisar minha conta de energia para dimensionar um sistema solar. Posso enviar minha fatura?\n\n${summary}`
+  ).replace(WHATSAPP_NUMBER, whatsappNumber);
+  const universalWhatsappLink = buildWhatsappUrl(
+    "Olá, Renovera. Gostaria de receber uma análise técnica pelo WhatsApp."
+  ).replace(WHATSAPP_NUMBER, whatsappNumber);
 
   useEffect(() => {
     let cancelled = false;
@@ -770,24 +774,29 @@ function App() {
             <p>{siteConfig.footer.description}</p>
           </div>
 
-          <div className="footer-col">
-            <h4>Menu</h4>
-            <a href="#calculadora">Calculadora</a>
-            <a href="#solucoes">Soluções</a>
-            <a href="#processo">Processo</a>
-            <a href="#duvidas">Dúvidas</a>
+          <div className="footer-col footer-grid-three">
+            <div className="footer-panel">
+              <h4><span className="footer-icon">01</span>ENDEREÇO</h4>
+              <p>Rua Visconde do Rio Branco, n.106, Centro, São João da Boa Vista - SP, CEP: 13870-180</p>
+            </div>
+            <div className="footer-panel">
+              <h4><span className="footer-icon">02</span>TELEFONES</h4>
+              <a href="https://wa.me/5519996514827" target="_blank" rel="noreferrer">+55 (19) 99651-4827</a>
+              <a href="tel:+551931950160">+55 (19) 3195-0160</a>
+            </div>
+            <div className="footer-panel">
+              <h4><span className="footer-icon">03</span>E-MAIL</h4>
+              <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>
+              <p>{siteConfig.footer.scopeText}</p>
+            </div>
           </div>
+        </div>
 
-          <div className="footer-col">
-            <h4>Contato</h4>
-            <a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a>
-            <a href={whatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer">WhatsApp comercial</a>
-          </div>
-
-          <div className="footer-col">
-            <h4>{siteConfig.footer.scopeTitle}</h4>
-            <p>{siteConfig.footer.scopeText}</p>
-          </div>
+        <div className="container ecosystem-links">
+          <a href="https://renovera1.github.io/renovera-consultoria-regulatoria/" target="_blank" rel="noreferrer">Consultoria Regulatória</a>
+          <a href="https://renovera1.github.io/renovera-projetos-eletricos/" target="_blank" rel="noreferrer">Projetos Elétricos</a>
+          <a href="https://renovera1.github.io/renovera-energia-solar/" target="_blank" rel="noreferrer">Energia Solar</a>
+          <a href="https://renovera1.github.io/renovera-eletroposto/" target="_blank" rel="noreferrer">Eletropostos</a>
         </div>
 
         <div className="container footer-bottom">
@@ -796,7 +805,7 @@ function App() {
       </footer>
 
       {siteConfig.visual.showFloatingWhatsapp && (
-        <a className="whatsapp-float" href={whatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer" aria-label="Falar no WhatsApp">
+        <a className="whatsapp-float" href={universalWhatsappLink} onClick={handleProtectedWhatsapp} target="_blank" rel="noreferrer" aria-label="Receber análise pelo WhatsApp">
           <WhatsAppIcon />
         </a>
       )}
